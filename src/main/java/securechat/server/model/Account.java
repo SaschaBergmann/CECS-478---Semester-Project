@@ -1,9 +1,6 @@
 package securechat.server.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -15,10 +12,14 @@ public class Account {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
     private String username;
+    @Column(length=100000)
     private byte[] pwd;
+    @Column(length=100000)
     private byte[] salt;
+    @Column(length=100000)
     private byte[] lastChallenge;
     private Date lastTokenDate;
+    @Column(length=100000)
     private byte[] token;
 
     protected Account(){}

@@ -35,6 +35,7 @@ public class AccountController {
             try {
                     account.setSalt(Random.createPseudoRandomKey(256));
                     account.setPwd(HashService.hash(account.getPwd(), account.getSalt()));
+                    userRepository.save(account);
                     return Collections.singletonMap("response", true);
             } catch (Exception e) {
                 e.printStackTrace();
