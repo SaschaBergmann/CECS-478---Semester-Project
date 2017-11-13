@@ -2,11 +2,7 @@ package securechat.server.model;
 
 import jdk.nashorn.internal.ir.annotations.Ignore;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.io.UnsupportedEncodingException;
+import javax.persistence.*;
 
 /**
  * Created by sasch on 09/10/2017.
@@ -16,104 +12,101 @@ public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
+
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] message;
+    @Column(columnDefinition = "BLOB")
     private byte[] iv;
-    private byte[] sender;
-    private byte[] recipient;
-    private byte[] keys;
+    private String sender;
+    private String recipient;
+    @Column(columnDefinition = "BLOB")
+    private byte[] encryptionK;
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] HMACHash;
-
     @Ignore
-    private byte[] jwt;
+    private String jwt;
 
-    protected Message(){
+    public Message() {
         this.message = new byte[0];
         this.iv = new byte[0];
-        this.sender = new byte[0];
-        this.recipient = new byte[0];
-        this.keys = new byte[0];
+        this.sender = "";
+        this.recipient = "";
+        this.encryptionK = new byte[0];
         this.HMACHash = new byte[0];
+        this.jwt = "";
     }
 
-    public Message( byte[] message,  byte[] sender,  byte[] recipient,  byte[] iv,  byte[] HMAC) {
+    public Message(byte[] message, byte[] iv, String sender, String recipient, byte[] encryptionK, byte[] HMACHash, String jwt) {
         this.message = message;
         this.iv = iv;
         this.sender = sender;
         this.recipient = recipient;
-        this.keys = new byte[0];
-        this.HMACHash = HMAC;
+        this.encryptionK = encryptionK;
+        this.HMACHash = HMACHash;
+        this.jwt = jwt;
     }
 
-    public  byte[] getMessage() {
+    public byte[] getMessage() {
         return message;
     }
 
-    public void setMessage( byte[] message) {
+    public void setMessage(byte[] message) {
         this.message = message;
     }
 
-    public  byte[] getIv() {
+    public byte[] getIv() {
         return iv;
     }
 
-    public void setIv( byte[] iv) {
+    public void setIv(byte[] iv) {
         this.iv = iv;
     }
 
-    public  byte[] getSender() {
+    public String getSender() {
         return sender;
     }
 
-    public void setSender( byte[] sender) {
+    public void setSender(String sender) {
         this.sender = sender;
     }
 
-    public  byte[] getRecipient() {
+    public String getRecipient() {
         return recipient;
     }
 
-    public void setRecipient( byte[] recipient) {
+    public void setRecipient(String recipient) {
         this.recipient = recipient;
     }
 
-    public  byte[] getKeys() {
-        return keys;
+    public byte[] getEncryptionK() {
+        return encryptionK;
     }
 
-    public void setKeys( byte[] keys) {
-        this.keys = keys;
+    public void setEncryptionK(byte[] encryptionK) {
+        this.encryptionK = encryptionK;
     }
 
-    public  byte[] getHMACHash() {
+    public byte[] getHMACHash() {
         return HMACHash;
     }
 
-    public void setHMACHash( byte[] HMACHash) {
+    public void setHMACHash(byte[] HMACHash) {
         this.HMACHash = HMACHash;
     }
 
-    @Override
-    public  String toString(){
-         String output = "";
-        try {
-            output += "Message: \nSender: "+new String(getSender(), "UTF-8");
-            output += "\nReceprient: "+new String(getRecipient(), "UTF-8");
-            output += "\nMessage: "+new String(getMessage(), "UTF-8");
-            output += "\nHMAC-Hash: "+new String(getHMACHash(), "UTF-8");
-            output += "\nIV: "+new String(getIv(), "UTF-8");
-            output += "\nKeys: "+new String(getKeys(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-        return output;
-    }
-
-    public byte[] getJwt() {
+    public String getJwt() {
         return jwt;
     }
 
-    public void setJwt(byte[] jwt) {
+    public void setJwt(String jwt) {
         this.jwt = jwt;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

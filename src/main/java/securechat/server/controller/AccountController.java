@@ -1,5 +1,6 @@
 package securechat.server.controller;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,11 +8,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import securechat.server.data.UserRepo;
 import securechat.server.model.Account;
+import securechat.server.model.wrapper.Login1Response;
+import securechat.server.model.wrapper.Login2RequestWrapper;
+import securechat.server.model.wrapper.Login2Response;
 import securechat.server.security.HashService;
 import securechat.server.security.Random;
 import securechat.server.security.integrity.HMACService;
 import securechat.server.security.jwt.JWTService;
 
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -45,55 +50,67 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/account/login1", method = RequestMethod.POST, produces = "application/json")
-    Map LoginRequest(@RequestBody String username){
+    Login1Response LoginRequest(@RequestBody String username){
 
+        Login1Response resp = new Login1Response();
+        resp.setSuccessful(false);
         List<Account> accounts = userRepository.findByUsername(username);
 
-        if (accounts.size() != 1) return Collections.singletonMap("response", false);
+        if (accounts.size() != 1) return resp;
 
         Account user = accounts.get(0);
 
         try {
             user.setLastChallenge(Random.createPseudoRandomKey(512));
-            Map<Object, Object> m = new HashMap();
 
-            m.put("response", true);
-            m.put("challenge", user.getLastChallenge());
-            m.put("salt", user.getSalt());
+            userRepository.save(user);
 
-            return m;
+            resp.setSuccessful(true);
+            resp.setChallenge(new String(user.getLastChallenge(),"ISO-8859-1"));
+            resp.setSalt(new String(user.getSalt(), "ISO-8859-1"));
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
-        return Collections.singletonMap("response", false);
+        return resp;
 
     }
 
     @RequestMapping(value = "/account/login2", method = RequestMethod.POST, produces = "application/json")
-    Map LoginRequest2(@RequestBody Map<String, Object> map){
+    Login2Response LoginRequest2(@RequestBody Login2RequestWrapper wrapper){
 
-        if (!(map.containsKey("username")&&map.containsKey("tag")))return Collections.singletonMap("response", false);
+        Login2Response resp = new Login2Response();
+        resp.setSuccessful(false);
 
-        List<Account> accounts = userRepository.findByUsername(map.get("username").toString());
-        if (accounts.size() != 1) return Collections.singletonMap("response", false);
+        List<Account> accounts = userRepository.findByUsername(wrapper.getUsername());
+        if (accounts.size() != 1) return resp;
 
         Account user = accounts.get(0);
-        if(this.isTagCorrect(user, (byte[]) map.get("tag"))){
+
+        byte[] tag = new byte[0];
+            tag = wrapper.getTag();
+
+        if(this.isTagCorrect(user, tag)){
 
             String jwt = jwtService.createJWT(user.getUsername(), "SecureChatServer_NotFrench", "JWT Token", 8000000);
+            user.setToken(jwt);
+            userRepository.save(user);
 
-            Map<Object, Object> m = new HashMap();
-
-            m.put("response", true);
-            m.put("jwt", jwt);
-            return m;
+            resp.setSuccessful(true);
+            resp.setJwt(jwt);
         }
-
-        return Collections.singletonMap("response", false);
+        return resp;
     }
 
     private boolean isTagCorrect(Account user, byte[] tag) {
-        return tag.equals(HMACService.CreateHMACHash(user.getLastChallenge(), user.getPwd()));
+
+        byte[] serverTag = HMACService.CreateHMACHash(user.getLastChallenge(), user.getPwd());
+
+        for (int i = 0; i < tag.length; i++) {
+            if (tag[i] != serverTag[i]) return false;
+        }
+        return true;
     }
 }
