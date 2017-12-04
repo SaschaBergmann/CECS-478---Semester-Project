@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import securechat.server.data.UserRepo;
+import securechat.server.helper.Constants;
 import securechat.server.model.Account;
 import securechat.server.model.wrapper.Login1Response;
 import securechat.server.model.wrapper.Login2RequestWrapper;
@@ -41,12 +42,12 @@ public class AccountController {
                     account.setSalt(Random.createPseudoRandomKey(256));
                     account.setPwd(HashService.hash(account.getPwd(), account.getSalt()));
                     userRepository.save(account);
-                    return Collections.singletonMap("response", true);
+                    return Collections.singletonMap(Constants.RESPONSE_TAG, true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return Collections.singletonMap("response", false);
+        return Collections.singletonMap(Constants.RESPONSE_TAG, false);
     }
 
     @RequestMapping(value = "/account/login1", method = RequestMethod.POST, produces = "application/json")
@@ -66,8 +67,8 @@ public class AccountController {
             userRepository.save(user);
 
             resp.setSuccessful(true);
-            resp.setChallenge(new String(user.getLastChallenge(),"ISO-8859-1"));
-            resp.setSalt(new String(user.getSalt(), "ISO-8859-1"));
+            resp.setChallenge(new String(user.getLastChallenge(), Constants.ENCODING_ISO));
+            resp.setSalt(new String(user.getSalt(), Constants.ENCODING_ISO));
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -89,12 +90,11 @@ public class AccountController {
 
         Account user = accounts.get(0);
 
-        byte[] tag = new byte[0];
-            tag = wrapper.getTag();
+        byte[] tag = wrapper.getTag();
 
         if(this.isTagCorrect(user, tag)){
 
-            String jwt = jwtService.createJWT(user.getUsername(), "SecureChatServer_NotFrench", "JWT Token", 8000000);
+            String jwt = jwtService.createJWT(user.getUsername(), Constants.JWT_ISSUER, Constants.JWT_SUBJECT, Constants.JWT_TIMEOUT);
             user.setToken(jwt);
             userRepository.save(user);
 

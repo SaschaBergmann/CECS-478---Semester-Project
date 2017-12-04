@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import securechat.server.data.MessageRepo;
 import securechat.server.data.UserRepo;
+import securechat.server.helper.Constants;
 import securechat.server.model.Account;
 import securechat.server.model.Message;
 
@@ -24,7 +25,7 @@ public class MessageController {
     public Map sendMessage(@RequestBody Message msg){
         //TODO: Check token
         msgRepo.save(msg);
-        return Collections.singletonMap("response", true);
+        return Collections.singletonMap(Constants.RESPONSE_TAG, true);
     }
 
 
