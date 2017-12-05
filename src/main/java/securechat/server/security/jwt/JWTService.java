@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
+import java.io.*;
 import java.security.Key;
 import java.util.Date;
 
@@ -18,8 +19,20 @@ public class JWTService {
     private byte[] key;
 
     public JWTService(){
-        //TODO: Read from file and generate key
-        key = ("123456789").getBytes();
+
+        File f = new File("server_pw.txt");
+        try {
+            FileInputStream fis = new FileInputStream(f);
+            byte[] data = new byte[(int) f.length()];
+            fis.read(data);
+            fis.close();
+
+            key = data;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String createJWT(String id, String issuer, String subject, long ttlMillis) {

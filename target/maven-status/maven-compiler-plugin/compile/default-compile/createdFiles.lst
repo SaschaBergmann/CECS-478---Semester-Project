@@ -1,0 +1,15 @@
+securechat\server\security\jwt\JWTService.class
+securechat\server\model\Account.class
+securechat\server\security\Random.class
+securechat\server\helper\Constants.class
+securechat\server\controller\AccountController.class
+securechat\server\data\MessageRepo.class
+securechat\server\model\wrapper\Login1Response.class
+securechat\server\model\wrapper\Login2RequestWrapper.class
+securechat\server\security\integrity\HMACService.class
+securechat\server\model\Message.class
+securechat\server\security\HashService.class
+securechat\server\model\wrapper\Login2Response.class
+securechat\server\controller\MessageController.class
+securechat\server\Runner.class
+securechat\server\data\UserRepo.class
